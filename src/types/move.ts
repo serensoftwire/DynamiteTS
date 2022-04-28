@@ -1,0 +1,1 @@
+export type Move = 'R' | 'P' | 'S' | 'W' | 'D';

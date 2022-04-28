@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node dist/index.js"
+    "start": "npm run build && npm run play",
+    "play": "node tools/dynamite-cli.js dist/index.js tools/rockBot.js",
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",

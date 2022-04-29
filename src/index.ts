@@ -12,7 +12,7 @@ interface MoveTracker {
     'W': number
 }
 
-class MyBot implements Bot {
+class SerenBot implements Bot {
     private readonly baseDynamiteChance: number = 0.04;
     private dynamiteChance: number = 0.04;
 
@@ -30,17 +30,12 @@ class MyBot implements Bot {
         this.refreshProbabilities(gamestate);
         const playSpecialMove: string = this.chooseTypeOfMove();
 
-        console.log(`We have ${this.ownDynamiteLeft} dynamites left`);
-        console.log(`Chance of dynamite is ${this.dynamiteChance}`);
-
         return playSpecialMove !== 'RPS' ? playSpecialMove as Move : this.chooseRPS();
     }
 
     private trackMoves(gamestate: GameState): void {
         if (gamestate.rounds.length) {
             const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
-
-            console.log(lastRound);
 
             this.enemyMoves[lastRound.p2] += 1;
 
@@ -60,7 +55,6 @@ class MyBot implements Bot {
                 this.noOfTies = 0;
             }
         }
-        console.log(this.noOfTies);
     }
 
     private adjustDynamiteForTies(): void {
@@ -69,6 +63,19 @@ class MyBot implements Bot {
 
     private adjustWaterForTies(): void {
         this.waterChance = this.baseWaterChance + 0.02 * this.noOfTies;
+    }
+
+    private adjustDynamiteForEnemyWaterPropensity(gamestate: GameState): void {
+        const totalRoundsSoFar: number = gamestate.rounds.length;
+        const enemyWaterChance: number = this.enemyMoves['W'] / totalRoundsSoFar;
+
+        const differenceFromExpected: number = enemyWaterChance - this.baseDynamiteChance;
+
+        if (totalRoundsSoFar > 10 && totalRoundsSoFar < 100) {
+            this.dynamiteChance -= differenceFromExpected * 0.2;
+        } else if (totalRoundsSoFar > 100) {
+            this.dynamiteChance -= differenceFromExpected * 0.5;
+        }
     }
 
     private adjustWaterForEnemyDynamitePropensity(gamestate: GameState): void {
@@ -101,6 +108,7 @@ class MyBot implements Bot {
         this.adjustWaterForTies();
 
         this.adjustWaterForEnemyDynamitePropensity(gamestate);
+        this.adjustDynamiteForEnemyWaterPropensity(gamestate);
 
         this.checkForDynamiteDepletion();
     }
@@ -126,4 +134,4 @@ class MyBot implements Bot {
     }
 }
 
-module.exports = new MyBot();
+module.exports = new SerenBot();

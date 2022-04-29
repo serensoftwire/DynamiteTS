@@ -2,6 +2,7 @@ import {Bot} from "./types/bot";
 import {GameState} from "./types/gameState";
 import {Move} from "./types/move";
 import {Round} from "./types/round";
+import {isNumberObject} from "util/types";
 
 interface MoveTracker {
     'R': number;
@@ -72,9 +73,9 @@ class MyBot implements Bot {
 
     private adjustWaterForEnemyDynamitePropensity(gamestate: GameState): void {
         const totalRoundsSoFar: number = gamestate.rounds.length;
-        const enemyDynamiteChance = this.enemyMoves['D'] / totalRoundsSoFar;
+        const enemyDynamiteChance: number = this.enemyMoves['D'] / totalRoundsSoFar;
 
-        const differenceFromExpected = enemyDynamiteChance - this.baseWaterChance;
+        const differenceFromExpected: number = enemyDynamiteChance - this.baseWaterChance;
 
         if (totalRoundsSoFar > 10 && totalRoundsSoFar < 100) {
             this.waterChance += differenceFromExpected * 0.5;
@@ -105,7 +106,7 @@ class MyBot implements Bot {
     }
 
     private chooseTypeOfMove(): string {
-        const randomProb = Math.random();
+        const randomProb: number = Math.random();
         if (randomProb < this.dynamiteChance) {
             return 'D';
         } else if (randomProb < this.dynamiteChance + this.waterChance) {

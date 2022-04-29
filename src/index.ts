@@ -2,7 +2,6 @@ import {Bot} from "./types/bot";
 import {GameState} from "./types/gameState";
 import {Move} from "./types/move";
 import {Round} from "./types/round";
-import {isNumberObject} from "util/types";
 
 interface MoveTracker {
     'R': number;
@@ -34,26 +33,22 @@ class SerenBot implements Bot {
     }
 
     private trackMoves(gamestate: GameState): void {
-        if (gamestate.rounds.length) {
-            const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
+        const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
 
-            this.enemyMoves[lastRound.p2] += 1;
+        this.enemyMoves[lastRound.p2] += 1;
 
-            if (lastRound.p1 === 'D') {
-                this.ownDynamiteLeft -= 1;
-            }
+        if (lastRound.p1 === 'D') {
+            this.ownDynamiteLeft -= 1;
         }
     }
 
     private incrementNoOfTies(gamestate: GameState): void {
-        if (gamestate.rounds.length) {
-            const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
+        const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
 
-            if (lastRound.p1 === lastRound.p2) {
-                this.noOfTies += 1;
-            } else {
-                this.noOfTies = 0;
-            }
+        if (lastRound.p1 === lastRound.p2) {
+            this.noOfTies += 1;
+        } else {
+            this.noOfTies = 0;
         }
     }
 
@@ -101,8 +96,10 @@ class SerenBot implements Bot {
     }
 
     private refreshProbabilities(gamestate: GameState): void {
-        this.trackMoves(gamestate);
-        this.incrementNoOfTies(gamestate);
+        if (gamestate.rounds.length) {
+            this.trackMoves(gamestate);
+            this.incrementNoOfTies(gamestate);
+        }
 
         this.adjustDynamiteForTies();
         this.adjustWaterForTies();

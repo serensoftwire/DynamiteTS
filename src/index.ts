@@ -79,12 +79,27 @@ class MyBot implements Bot {
         this.waterChance = this.baseWaterChance + 0.02 * this.noOfTies;
     }
 
+    adjustWaterForEnemyDynamitePropensity(gamestate: GameState): void {
+        const totalRoundsSoFar: number = gamestate.rounds.length;
+        const enemyDynamiteChance = this.enemyMoves['D'] / totalRoundsSoFar;
+
+        const differenceFromExpected = enemyDynamiteChance - this.baseWaterChance;
+
+        if (totalRoundsSoFar > 10 && totalRoundsSoFar < 100) {
+            this.waterChance += differenceFromExpected * 0.5;
+        } else if (totalRoundsSoFar > 100) {
+            this.waterChance += differenceFromExpected * 0.8;
+        }
+    }
+
     refreshProbabilities(gamestate: GameState): void {
         this.trackMoves(gamestate);
         this.incrementNoOfTies(gamestate);
 
         this.adjustDynamiteForTies();
         this.adjustWaterForTies();
+
+        this.adjustWaterForEnemyDynamitePropensity(gamestate);
 
         this.checkForDynamiteDepletion();
     }

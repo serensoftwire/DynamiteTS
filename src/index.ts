@@ -35,7 +35,7 @@ class MyBot implements Bot {
         return playSpecialMove !== 'RPS' ? playSpecialMove as Move : this.chooseRPS();
     }
 
-    trackMoves(gamestate: GameState): void {
+    private trackMoves(gamestate: GameState): void {
         if (gamestate.rounds.length) {
             const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
 
@@ -49,7 +49,7 @@ class MyBot implements Bot {
         }
     }
 
-    incrementNoOfTies(gamestate: GameState): void {
+    private incrementNoOfTies(gamestate: GameState): void {
         if (gamestate.rounds.length) {
             const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
 
@@ -62,24 +62,15 @@ class MyBot implements Bot {
         console.log(this.noOfTies);
     }
 
-    checkForDynamiteDepletion(): void {
-        if (this.enemyMoves['D'] === 100) {
-            this.waterChance = 0;
-        }
-        if (this.ownDynamiteLeft === 0) {
-            this.dynamiteChance = 0;
-        }
-    }
-
-    adjustDynamiteForTies(): void {
+    private adjustDynamiteForTies(): void {
         this.dynamiteChance = this.baseDynamiteChance + 0.02 * this.noOfTies;
     }
 
-    adjustWaterForTies(): void {
+    private adjustWaterForTies(): void {
         this.waterChance = this.baseWaterChance + 0.02 * this.noOfTies;
     }
 
-    adjustWaterForEnemyDynamitePropensity(gamestate: GameState): void {
+    private adjustWaterForEnemyDynamitePropensity(gamestate: GameState): void {
         const totalRoundsSoFar: number = gamestate.rounds.length;
         const enemyDynamiteChance = this.enemyMoves['D'] / totalRoundsSoFar;
 
@@ -92,7 +83,16 @@ class MyBot implements Bot {
         }
     }
 
-    refreshProbabilities(gamestate: GameState): void {
+    private checkForDynamiteDepletion(): void {
+        if (this.enemyMoves['D'] === 100) {
+            this.waterChance = 0;
+        }
+        if (this.ownDynamiteLeft === 0) {
+            this.dynamiteChance = 0;
+        }
+    }
+
+    private refreshProbabilities(gamestate: GameState): void {
         this.trackMoves(gamestate);
         this.incrementNoOfTies(gamestate);
 
@@ -104,7 +104,7 @@ class MyBot implements Bot {
         this.checkForDynamiteDepletion();
     }
 
-    chooseTypeOfMove(): string {
+    private chooseTypeOfMove(): string {
         const randomProb = Math.random();
         if (randomProb < this.dynamiteChance) {
             return 'D';
@@ -115,11 +115,11 @@ class MyBot implements Bot {
         }
     }
 
-    rollForRPS(): void {
+    private rollForRPS(): void {
         this.randomRPSInt = Math.floor(Math.random() * 3);
     }
 
-    chooseRPS(): Move {
+    private chooseRPS(): Move {
         this.rollForRPS();
         return this.normalMoves[this.randomRPSInt];
     }

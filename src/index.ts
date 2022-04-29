@@ -13,17 +13,26 @@ interface MoveTracker {
 
 class SerenBot implements Bot {
     private readonly baseDynamiteChance: number = 0.04;
-    private dynamiteChance: number = 0.04;
+    private dynamiteChance: number;
 
     private readonly baseWaterChance: number = 0.04;
-    private waterChance: number = 0.04;
+    private waterChance: number;
+
     private readonly normalMoves: Move[] = ['R', 'P', 'S'];
     private randomRPSInt: number = Math.floor(Math.random() * 3);
 
-    private ownDynamiteLeft: number = 100;
+    private ownDynamiteLeft: number;
 
-    private enemyMoves: MoveTracker = {'R': 0, 'P': 0, 'S': 0, 'D': 0, 'W': 0}
-    private noOfTies: number = 0;
+    private readonly enemyMoves: MoveTracker;
+    private noOfTies: number;
+
+    constructor() {
+        this.ownDynamiteLeft = 100;
+        this.dynamiteChance = this.baseDynamiteChance;
+        this.waterChance = this.baseWaterChance;
+        this.noOfTies = 0;
+        this.enemyMoves = {'R': 0, 'P': 0, 'S': 0, 'D': 0, 'W': 0};
+    }
 
     makeMove(gamestate: GameState): Move {
         this.refreshProbabilities(gamestate);

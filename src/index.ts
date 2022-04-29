@@ -4,11 +4,57 @@ import {Move} from "./types/move";
 import {Round} from "./types/round";
 
 interface MoveTracker {
-    'R': number;
+    'R': number,
     'P': number,
     'S': number,
     'D': number,
     'W': number
+}
+
+interface Adjudicator {
+    'R': Move[],
+    'P': Move[],
+    'S': Move[],
+    'D': Move[],
+    'W': Move[]
+}
+
+
+class ScoreKeeper {
+    private ownScore: number;
+    private enemyScore: number;
+
+    private static readonly victoryTable: Adjudicator = {
+        'R': ['S'],
+        'P': ['R'],
+        'S': ['P'],
+        'D': ['R', 'P', 'S'],
+        'W': ['D']
+    }
+
+    constructor() {
+        this.ownScore = 0;
+        this.enemyScore = 0;
+    }
+
+    private incrementOwnScore() {
+        this.ownScore += 1;
+    }
+
+    private incrementEnemyScore() {
+        this.enemyScore += 1;
+    }
+
+    incrementScore(lastRound: Round) {
+        const ownMove = lastRound.p1;
+        const enemyMove = lastRound.p2;
+
+        if (enemyMove in ScoreKeeper.victoryTable[ownMove]) {
+            this.incrementOwnScore();
+        } else if (ownMove in ScoreKeeper.victoryTable[enemyMove]) {
+            this.incrementEnemyScore();
+        }
+    }
 }
 
 class SerenBot implements Bot {
@@ -26,12 +72,15 @@ class SerenBot implements Bot {
     private readonly enemyMoves: MoveTracker;
     private noOfTies: number;
 
+    private readonly scores: ScoreKeeper;
+
     constructor() {
         this.ownDynamiteLeft = 100;
         this.dynamiteChance = this.baseDynamiteChance;
         this.waterChance = this.baseWaterChance;
         this.noOfTies = 0;
         this.enemyMoves = {'R': 0, 'P': 0, 'S': 0, 'D': 0, 'W': 0};
+        this.scores = new ScoreKeeper();
     }
 
     makeMove(gamestate: GameState): Move {
@@ -41,9 +90,7 @@ class SerenBot implements Bot {
         return playSpecialMove !== 'RPS' ? playSpecialMove as Move : this.chooseRPS();
     }
 
-    private trackMoves(gamestate: GameState): void {
-        const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
-
+    private trackMoves(lastRound: Round): void {
         this.enemyMoves[lastRound.p2] += 1;
 
         if (lastRound.p1 === 'D') {
@@ -51,9 +98,7 @@ class SerenBot implements Bot {
         }
     }
 
-    private incrementNoOfTies(gamestate: GameState): void {
-        const lastRound: Round = gamestate.rounds[gamestate.rounds.length - 1];
-
+    private incrementNoOfTies(lastRound: Round): void {
         if (lastRound.p1 === lastRound.p2) {
             this.noOfTies += 1;
         } else {
@@ -104,10 +149,17 @@ class SerenBot implements Bot {
         }
     }
 
+    private logLastRoundInfo(lastRound: Round) {
+        this.trackMoves(lastRound);
+        this.incrementNoOfTies(lastRound);
+        this.scores.incrementScore(lastRound);
+    }
+
     private refreshProbabilities(gamestate: GameState): void {
+
         if (gamestate.rounds.length) {
-            this.trackMoves(gamestate);
-            this.incrementNoOfTies(gamestate);
+            const lastRound = gamestate.rounds[gamestate.rounds.length - 1];
+            this.logLastRoundInfo(lastRound);
         }
 
         this.adjustDynamiteForTies();
